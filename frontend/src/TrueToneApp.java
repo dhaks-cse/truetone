@@ -30,7 +30,7 @@ public class TrueToneApp extends JFrame {
     static final Color TEXT_MUTED = new Color(100, 116, 139);
     static final Color BORDER_COL = new Color(40,  50,  75);
 
-    static final String API_BASE  = "http://localhost:8080";
+    static final String API_BASE  = "https://truetone-2967.onrender.com";
 
     // ── state ─────────────────────────────────────────────────────────────────
     private File      selectedFile   = null;
@@ -552,7 +552,7 @@ public class TrueToneApp extends JFrame {
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
         conn.setRequestProperty("Content-Length", String.valueOf(body.length));
         conn.setConnectTimeout(10000);
-        conn.setReadTimeout(30000);
+        conn.setReadTimeout(120000);
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(body);
