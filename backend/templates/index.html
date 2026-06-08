@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrueTone — EchoShield AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12;
+    --surface: #0d1220;
+    --card: #111827;
+    --border: #1e293b;
+    --accent: #00d4ff;
+    --accent2: #0ea5e9;
+    --real: #10b981;
+    --fake: #f43f5e;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow: 0 0 40px rgba(0,212,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .logo-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--real);
+    letter-spacing: 0.05em;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--real);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-section {
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 60px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.05) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  .drop-zone:hover::before,
+  .drop-zone.dragover::before {
+    opacity: 1;
+  }
+
+  .drop-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(14,165,233,0.1));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: transform 0.3s;
+  }
+
+  .drop-zone:hover .drop-icon {
+    transform: translateY(-4px);
+  }
+
+  .drop-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .drop-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .file-types {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .file-tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .file-selected {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+
+  .file-selected.show { display: flex; }
+
+  .file-name {
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  .remove-file {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .remove-file:hover { color: var(--fake); }
+
+  #file-input { display: none; }
+
+  /* ── ANALYZE BUTTON ── */
+  .analyze-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .analyze-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .analyze-btn:hover::after { opacity: 1; }
+  .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.35); }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    animation: progressAnim 2s ease-in-out infinite;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* ── RESULT ── */
+  .result-section {
+    display: none;
+    margin-top: 40px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .result-section.show { display: block; }
+
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--result-color, var(--accent));
+    border-radius: 16px 16px 0 0;
+  }
+
+  .result-card.real { --result-color: var(--real); }
+  .result-card.fake { --result-color: var(--fake); }
+
+  .result-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .result-verdict {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .verdict-badge {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  .verdict-badge.real {
+    color: var(--real);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  .verdict-badge.fake {
+    color: var(--fake);
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.3);
+  }
+
+  .verdict-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .verdict-info p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .confidence-display {
+    text-align: right;
+  }
+
+  .confidence-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .confidence-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Confidence bar */
+  .conf-bar-wrap {
+    margin-bottom: 28px;
+  }
+
+  .conf-bar-bg {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .conf-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .conf-bar-fill.real { background: linear-gradient(90deg, #059669, var(--real)); }
+  .conf-bar-fill.fake { background: linear-gradient(90deg, #be123c, var(--fake)); }
+
+  /* ── VIZ TABS ── */
+  .viz-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .viz-tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .viz-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .viz-tab.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+
+  .viz-canvas-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 180px;
+    position: relative;
+  }
+
+  #viz-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .viz-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ── HISTORY ── */
+  .history-section {
+    margin-top: 48px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .refresh-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .history-table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: var(--surface);
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  tbody td {
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .badge-real {
+    color: var(--real);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .badge-fake {
+    color: var(--fake);
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.2);
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .empty-history {
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 64px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 100;
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: rgba(244,63,94,0.4); color: var(--fake); }
+  .toast.success { border-color: rgba(16,185,129,0.4); color: var(--real); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  @keyframes progressAnim {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  @media (max-width: 600px) {
+    .result-top { flex-direction: column; }
+    .confidence-display { text-align: left; }
+    .header-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🛡</div>
+        <div class="logo-text">
+          <h1>TrueTone</h1>
+          <p>EchoShield AI · Voice Authentication</p>
+        </div>
+      </div>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        API Live
+      </div>
+    </div>
+  </header>
+
+  <!-- Upload -->
+  <section class="upload-section">
+    <div class="section-label">Upload Audio</div>
+
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="drop-icon">🎙</div>
+      <div class="drop-title">Drop your audio file here</div>
+      <div class="drop-sub">or click to browse from your device</div>
+      <div class="file-types">
+        <span class="file-tag">WAV</span>
+        <span class="file-tag">MP3</span>
+        <span class="file-tag">FLAC</span>
+        <span class="file-tag">OGG</span>
+        <span class="file-tag">M4A</span>
+      </div>
+      <div class="file-selected" id="file-selected">
+        <span>📎</span>
+        <span class="file-name" id="file-name-display"></span>
+        <button class="remove-file" id="remove-file" onclick="removeFile(event)">×</button>
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept=".wav,.mp3,.flac,.ogg,.m4a">
+
+    <button class="analyze-btn" id="analyze-btn" onclick="analyzeAudio()" disabled>
+      ⚡ Analyze Voice
+    </button>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">Uploading and analyzing…</div>
+    </div>
+  </section>
+
+  <!-- Result -->
+  <section class="result-section" id="result-section">
+    <div class="section-label">Analysis Result</div>
+    <div class="result-card" id="result-card">
+      <div class="result-top">
+        <div class="result-verdict">
+          <div class="verdict-badge" id="verdict-badge">—</div>
+          <div class="verdict-info">
+            <h3 id="verdict-title">Voice Analysis</h3>
+            <p id="verdict-sub">Powered by MFCC + Random Forest</p>
+          </div>
+        </div>
+        <div class="confidence-display">
+          <div class="confidence-num" id="conf-num">—</div>
+          <div class="confidence-label">Confidence</div>
+        </div>
+      </div>
+
+      <div class="conf-bar-wrap">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Confidence Level</div>
+        <div class="conf-bar-bg">
+          <div class="conf-bar-fill" id="conf-bar"></div>
+        </div>
+      </div>
+
+      <div class="viz-tabs">
+        <button class="viz-tab active" onclick="switchViz('waveform', this)">📈 Waveform</button>
+        <button class="viz-tab" onclick="switchViz('spectrogram', this)">🎨 Spectrogram</button>
+      </div>
+
+      <div class="viz-canvas-wrap">
+        <canvas id="viz-canvas"></canvas>
+        <div class="viz-placeholder" id="viz-placeholder">Loading visualization…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section class="history-section">
+    <div class="section-label">
+      <span>Prediction History</span>
+    </div>
+    <div class="history-header">
+      <span style="font-size:13px;color:var(--muted)" id="history-count"></span>
+      <button class="refresh-btn" onclick="loadHistory()">↻ Refresh</button>
+    </div>
+    <div class="history-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Filename</th>
+            <th>Result</th>
+            <th>Confidence</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="5"><div class="empty-history">No predictions yet</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    TrueTone · EchoShield AI · Final Year Project · CSE
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';  // same origin — Flask serves this file
+  let selectedFile = null;
+  let lastPredId = null;
+  let waveformData = null;
+  let spectroData = null;
+  let currentViz = 'waveform';
+
+  // ── File handling ──
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) setFile(f);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+
+  function setFile(f) {
+    selectedFile = f;
+    document.getElementById('file-name-display').textContent = f.name;
+    document.getElementById('file-selected').classList.add('show');
+    document.getElementById('analyze-btn').disabled = false;
+    waveformData = null; spectroData = null;
+  }
+
+  function removeFile(e) {
+    e.stopPropagation();
+    selectedFile = null;
+    fileInput.value = '';
+    document.getElementById('file-selected').classList.remove('show');
+    document.getElementById('analyze-btn').disabled = true;
+  }
+
+  // ── Analyze ──
+  async function analyzeAudio() {
+    if (!selectedFile) return;
+    document.getElementById('analyze-btn').disabled = true;
+    document.getElementById('progress-wrap').classList.add('show');
+    document.getElementById('result-section').classList.remove('show');
+
+    const formData = new FormData();
+    formData.append('audio', selectedFile);
+
+    try {
+      const res = await fetch(API + '/predict', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.error) { showToast(data.error, 'error'); return; }
+
+      lastPredId = data.prediction_id;
+      showResult(data);
+      fetchWaveform(lastPredId);
+      loadHistory();
+    } catch (e) {
+      showToast('Server error. Is the API running?', 'error');
+    } finally {
+      document.getElementById('progress-wrap').classList.remove('show');
+      document.getElementById('analyze-btn').disabled = false;
+    }
+  }
+
+  function showResult(data) {
+    const isReal = data.result === 'REAL';
+    const card = document.getElementById('result-card');
+    const badge = document.getElementById('verdict-badge');
+    const confNum = document.getElementById('conf-num');
+    const confBar = document.getElementById('conf-bar');
+
+    card.className = 'result-card ' + (isReal ? 'real' : 'fake');
+    badge.className = 'verdict-badge ' + (isReal ? 'real' : 'fake');
+    badge.textContent = data.result;
+    confNum.textContent = data.confidence.toFixed(1) + '%';
+    confNum.style.color = isReal ? 'var(--real)' : 'var(--fake)';
+    document.getElementById('verdict-title').textContent = isReal ? 'Human Voice Detected' : 'AI-Generated Voice Detected';
+    document.getElementById('verdict-sub').textContent = `File: ${data.filename}`;
+
+    confBar.className = 'conf-bar-fill ' + (isReal ? 'real' : 'fake');
+    setTimeout(() => { confBar.style.width = data.confidence + '%'; }, 50);
+
+    document.getElementById('result-section').classList.add('show');
+    document.getElementById('viz-placeholder').textContent = 'Loading visualization…';
+    clearCanvas();
+  }
+
+  // ── Visualization ──
+  async function fetchWaveform(predId) {
+    try {
+      const res = await fetch(API + '/waveform/' + predId);
+      const data = await res.json();
+      waveformData = data.waveform;
+      if (currentViz === 'waveform') drawWaveform();
+    } catch(e) {}
+  }
+
+  async function fetchSpectrogram(predId) {
+    document.getElementById('viz-placeholder').textContent = 'Loading spectrogram…';
+    try {
+      const res = await fetch(API + '/spectrogram/' + predId);
+      spectroData = await res.json();
+      drawSpectrogram();
+    } catch(e) {
+      document.getElementById('viz-placeholder').textContent = 'Failed to load spectrogram';
+    }
+  }
+
+  function switchViz(type, btn) {
+    currentViz = type;
+    document.querySelectorAll('.viz-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    if (type === 'waveform') {
+      if (waveformData) drawWaveform(); else document.getElementById('viz-placeholder').textContent = 'Analyze a file first';
+    } else {
+      if (spectroData) drawSpectrogram();
+      else if (lastPredId) fetchSpectrogram(lastPredId);
+      else document.getElementById('viz-placeholder').textContent = 'Analyze a file first';
+    }
+  }
+
+  function clearCanvas() {
+    const canvas = document.getElementById('viz-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function drawWaveform() {
+    if (!waveformData) return;
+    document.getElementById('viz-placeholder').style.display = 'none';
+    const canvas = document.getElementById('viz-canvas');
+    const wrap = canvas.parentElement;
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Mid line
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+    const n = waveformData.length;
+    const step = w / n;
+
+    // Gradient
+    const grad = ctx.createLinearGradient(0, 0, w, 0);
+    grad.addColorStop(0, 'rgba(0,212,255,0.8)');
+    grad.addColorStop(0.5, 'rgba(14,165,233,1)');
+    grad.addColorStop(1, 'rgba(0,212,255,0.8)');
+
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = i * step;
+      const y = h/2 - waveformData[i] * (h * 0.42);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawSpectrogram() {
+    if (!spectroData) return;
+    document.getElementById('viz-placeholder').style.display = 'none';
+    const canvas = document.getElementById('viz-canvas');
+    const wrap = canvas.parentElement;
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    const rows = spectroData.data.length;
+    const cols = spectroData.data[0].length;
+    const cellW = w / cols;
+    const cellH = h / rows;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const val = Math.max(0, Math.min(1, (spectroData.data[r][c] + 80) / 80));
+        ctx.fillStyle = spectroColor(val);
+        ctx.fillRect(Math.floor(c * cellW), Math.floor(h - (r+1)*cellH), Math.ceil(cellW)+1, Math.ceil(cellH)+1);
+      }
+    }
+  }
+
+  function spectroColor(v) {
+    const r = [0,0,0,1,1];
+    const g = [0,1,1,1,0];
+    const b = [1,1,0,0,0];
+    const s = v * 4;
+    const i = Math.min(Math.floor(s), 3);
+    const t = s - i;
+    const ri = Math.round((r[i] + t*(r[i+1]-r[i]))*255);
+    const gi = Math.round((g[i] + t*(g[i+1]-g[i]))*255);
+    const bi = Math.round((b[i] + t*(b[i+1]-b[i]))*255);
+    return `rgb(${ri},${gi},${bi})`;
+  }
+
+  // ── History ──
+  async function loadHistory() {
+    try {
+      const res = await fetch(API + '/history');
+      const data = await res.json();
+      const tbody = document.getElementById('history-tbody');
+      document.getElementById('history-count').textContent = data.length + ' predictions';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-history">No predictions yet</div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(row => `
+        <tr>
+          <td style="color:var(--muted)">${row.id}</td>
+          <td>${row.filename}</td>
+          <td><span class="badge-${row.result.toLowerCase()}">${row.result}</span></td>
+          <td>${(row.confidence * 100).toFixed(1)}%</td>
+          <td style="color:var(--muted)">${row.created_at}</td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 3500);
+  }
+
+  // Init
+  loadHistory();
+  window.addEventListener('resize', () => {
+    if (currentViz === 'waveform' && waveformData) drawWaveform();
+    else if (currentViz === 'spectrogram' && spectroData) drawSpectrogram();
+  });
+</script>
+</body>
+</html>

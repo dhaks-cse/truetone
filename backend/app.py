@@ -35,6 +35,12 @@ def _allowed(filename: str) -> bool:
     return os.path.splitext(filename)[1].lower() in ALLOWED_EXT
 
 
+from flask import send_from_directory
+
+@app.route("/")
+def home():
+    return send_from_directory("templates", "index.html")
+
 # ── routes ────────────────────────────────────────────────────────────────────
 
 @app.route('/health', methods=['GET'])
