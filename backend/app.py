@@ -20,7 +20,7 @@ from models.classifier       import predict
 
 # ── app setup ─────────────────────────────────────────────────────────────────
 app         = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 UPLOAD_DIR  = os.path.join(os.path.dirname(__file__), 'uploads')
 ALLOWED_EXT = {'.wav', '.mp3', '.flac', '.ogg', '.m4a'}
@@ -113,4 +113,4 @@ def spectrogram_route(pred_id: str):
 if __name__ == '__main__':
     init_db()
     print("TrueTone API running on http://localhost:5000")
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8080)

@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
 import java.net.*;
+import java.io.ByteArrayOutputStream;
 import java.net.http.*;
 import java.nio.file.*;
 import java.util.*;
@@ -29,7 +30,7 @@ public class TrueToneApp extends JFrame {
     static final Color TEXT_MUTED = new Color(100, 116, 139);
     static final Color BORDER_COL = new Color(40,  50,  75);
 
-    static final String API_BASE  = "http://localhost:5000";
+    static final String API_BASE  = "http://localhost:8080";
 
     // ── state ─────────────────────────────────────────────────────────────────
     private File      selectedFile   = null;
@@ -529,30 +530,40 @@ public class TrueToneApp extends JFrame {
 
     // ── HTTP helpers ──────────────────────────────────────────────────────────
     private JSONObject uploadAndPredict(File file) throws Exception {
-        String boundary = "----TrueTone" + System.currentTimeMillis();
+        String boundary = "----TrueToneBoundary" + System.currentTimeMillis();
+        byte[] fileBytes = Files.readAllBytes(file.toPath());
+
+        // Build multipart body as bytes
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String partHeader =
+            "--" + boundary + "\r\n" +
+            "Content-Disposition: form-data; name=\"audio\"; filename=\"" + file.getName() + "\"\r\n" +
+            "Content-Type: application/octet-stream\r\n\r\n";
+        baos.write(partHeader.getBytes("UTF-8"));
+        baos.write(fileBytes);
+        String closing = "\r\n--" + boundary + "--\r\n";
+        baos.write(closing.getBytes("UTF-8"));
+        byte[] body = baos.toByteArray();
+
         URL url = new URL(API_BASE + "/predict");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+        conn.setRequestProperty("Content-Length", String.valueOf(body.length));
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(30000);
 
-        try (OutputStream os = conn.getOutputStream();
-             PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true)) {
-
-            pw.append("--").append(boundary).append("\r\n");
-            pw.append("Content-Disposition: form-data; name=\"audio\"; filename=\"")
-              .append(file.getName()).append("\"").append("\r\n");
-            pw.append("Content-Type: application/octet-stream").append("\r\n\r\n");
-            pw.flush();
-            Files.copy(file.toPath(), os);
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(body);
             os.flush();
-            pw.append("\r\n--").append(boundary).append("--\r\n");
         }
 
         int code = conn.getResponseCode();
         InputStream is = (code >= 400) ? conn.getErrorStream() : conn.getInputStream();
-        String body = new String(is.readAllBytes());
-        return new JSONObject(body);
+        if (is == null) throw new Exception("No response from server (code " + code + ")");
+        String resp = new String(is.readAllBytes());
+        return new JSONObject(resp);
     }
 
     private String httpGet(String urlStr) throws Exception {
