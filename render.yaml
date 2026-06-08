@@ -1,0 +1,12 @@
+cd ~/Downloads/TrueTone
+cat > render.yaml << 'EOF'
+services:
+  - type: web
+    name: truetone-api
+    runtime: python
+    buildCommand: pip install flask flask-cors librosa scikit-learn soundfile scipy joblib audioread matplotlib
+    startCommand: cd backend && python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+EOF
