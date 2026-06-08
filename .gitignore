@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+backend/truetone.db
+backend/uploads/
+backend/models/rf_model.pkl
+backend/models/label_encoder.pkl
+frontend/src/*.class
+frontend/json.jar
+dataset/real/*.wav
+dataset/fake/*.wav
+.DS_Store
