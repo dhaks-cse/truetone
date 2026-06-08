@@ -221,5 +221,4 @@ curl http://localhost:5000/history
 ## Project Info
 
 - **Project**: TrueTone (EchoShield AI)
-- **Degree**: B.E. / B.Tech CSE Final Year
 - **Description**: Voice authenticity detection using MFCC feature extraction and Random Forest classification
