@@ -1,4 +1,3 @@
-#!/bin/bash
 # run_frontend.sh — Run from project root: bash run_frontend.sh
 set -e
 
