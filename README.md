@@ -174,37 +174,6 @@ The TrueTone window opens. You are ready.
 
 ---
 
-## API Endpoints (for reference / testing)
-
-```
-GET  /health                  → { "status": "ok" }
-POST /predict                 → upload field name: "audio"
-GET  /history                 → last 100 predictions
-GET  /waveform/<prediction_id>
-GET  /spectrogram/<prediction_id>
-```
-
-Test with curl:
-```bash
-curl -F "audio=@/path/to/voice.wav" http://localhost:5000/predict
-curl http://localhost:5000/history
-```
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| `ModuleNotFoundError: librosa` | Run `pip install -r requirements.txt` with venv active |
-| `Model not found` error | Run `python scripts/train.py` first |
-| `Connection refused` in Java GUI | Make sure Flask is running (`python app.py`) |
-| `javac: command not found` | Install JDK: `brew install openjdk@17` |
-| Low accuracy | Add more audio samples (50+ per class recommended) |
-| `soundfile` error on MP3 | Install ffmpeg: `brew install ffmpeg` |
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
