@@ -1,4 +1,4 @@
-# TrueTone — EchoShield AI
+# TrueTone 
 **Detect whether a voice recording is real or AI-generated.**
 
 ---
@@ -170,7 +170,7 @@ The TrueTone window opens. You are ready.
 | 3 | Result shows **REAL** (green) or **FAKE** (red) with confidence % |
 | 4 | Click **Waveform** to see the audio waveform |
 | 5 | Click **Spectrogram** to see the mel spectrogram |
-| 6 | Click **History** in the sidebar → **Refresh** to see all past predictions |
+| 6 | Click **History** in the bottom → **Refresh** to see all past predictions |
 
 ---
 
@@ -189,6 +189,6 @@ The TrueTone window opens. You are ready.
 
 ## Project Info
 
-- **Project**: TrueTone (EchoShield AI)
+- **Project**: TrueTone 
 - **Description**: Voice authenticity detection using MFCC feature extraction and Random Forest classification
 - **Render**: https://truetone-2967.onrender.com/
